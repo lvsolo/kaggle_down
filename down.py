@@ -18,9 +18,10 @@ if ind <= len(sys.argv):
     ind += 1
 api=KaggleApi()
 api.authenticate()
+store_path += '/'+search_tag + '/'
 
 #api.competition_download_file('sentiment-analysis-on-movie-reviews','train.tsv.zip', path='./')
-datasets = kaggle.api.datasets_list(search="helmet")
+datasets = kaggle.api.datasets_list(search=search_tag)
 
 total_bytes = 0
 for dt in datasets:
@@ -28,14 +29,16 @@ for dt in datasets:
 print('total bytes:', total_bytes / 1024/1024, 'MB')
 with open('downloaded_record', 'a+') as f:
     lines = f.readlines()
-    for dt in datasets[:1]:
+    for dt in datasets:
         pprint.pprint(dt['ref'])
         if dt['ref'] in lines:
             continue
+        else:
+           f.write(dt['ref']+'\n')
         if not os.path.exists(store_path + dt['ref']):
             os.makedirs(store_path+dt['ref'])
+        print('kaggle datasets download -d ' + dt['ref'] + ' -p ' + store_path + dt['ref'])
         os.system('kaggle datasets download -d ' + dt['ref'] + ' -p ' + store_path + dt['ref'])
         str_json = json.dumps(dt, indent=4)
-        print('kaggle datasets download -d ' + dt['ref'] + ' -p ' + store_path + dt['ref'])
-        print(store_path + dt['ref'] + '/' + dt['ref'].split('/')[-1] + '.json')
         print(str_json, file=open(store_path + dt['ref'] + '/' + dt['ref'].split('/')[-1] + '.json', 'w'))
+    f.close()
